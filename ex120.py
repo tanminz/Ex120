@@ -1,43 +1,41 @@
 import numpy as np
 
 
-def tao_ma_tran():
+def create_matrix():
     """
-    Tạo ma trận ngẫu nhiên NxN, giá trị nguyên trong [-100, 100].
-    Trả về ma trận A (ndarray).
+    Tạo ma trận ngẫu nhiên có kích thước m x n với giá trị nguyên trong khoảng [-100, 100].
     """
-    N = int(input("Nhập kích thước ma trận vuông N: "))
-    A = np.random.randint(-100, 101, size=(N, N))
-    print("Đã tạo ma trận ngẫu nhiên A:")
+    m = int(input("Nhập số dòng m: "))
+    n = int(input("Nhập số cột n: "))
+    A = np.random.randint(-100, 101, size=(m, n))
+    print("Ma trận A:")
     print(A)
     return A
 
 
-def hoan_doi_dong_max_mean(A):
+def swap_row_with_max_mean(A):
     """
-    Tìm dòng có giá trị trung bình lớn nhất rồi hoán đổi với dòng đầu.
-    Trả về ma trận A đã được hoán đổi.
+    Tìm dòng có giá trị trung bình lớn nhất và hoán đổi với dòng đầu.
     """
     if A is None:
         print("Bạn chưa tạo ma trận. Hãy chọn chức năng [1] trước.")
         return None
 
-    row_means = A.mean(axis=1)  # trung bình mỗi dòng
-    max_row_index = np.argmax(row_means)  # chỉ số dòng có trung bình lớn nhất
-    if max_row_index != 0:
-        A[[0, max_row_index], :] = A[[max_row_index, 0], :]  # hoán đổi dòng
+    row_means = A.mean(axis=1)  # Tính trung bình của từng dòng
+    max_index = np.argmax(row_means)
+
+    if max_index != 0:
+        A[[0, max_index], :] = A[[max_index, 0], :]
+
     print("Ma trận sau khi hoán đổi dòng đầu với dòng có mean lớn nhất:")
     print(A)
     return A
 
 
-def thay_doi_gia_tri_cot(A):
+def change_column_values(A):
     """
-    Yêu cầu người dùng nhập:
-      - cột nào muốn thay đổi
-      - giá trị c
-    Nếu phần tử trong cột < c thì nhân đôi, ngược lại giữ nguyên.
-    Trả về ma trận A đã thay đổi.
+    Thay đổi giá trị của một cột theo điều kiện:
+    Nếu phần tử trong cột đó nhỏ hơn giá trị c thì nhân đôi.
     """
     if A is None:
         print("Bạn chưa tạo ma trận. Hãy chọn chức năng [1] trước.")
@@ -46,8 +44,7 @@ def thay_doi_gia_tri_cot(A):
     col_index = int(input("Nhập chỉ số cột muốn thay đổi (0-based): "))
     c = float(input("Nhập giá trị c: "))
 
-    rows = A.shape[0]
-    for i in range(rows):
+    for i in range(A.shape[0]):
         if A[i, col_index] < c:
             A[i, col_index] *= 2
 
@@ -56,40 +53,42 @@ def thay_doi_gia_tri_cot(A):
     return A
 
 
-def tinh_dinh_thuc(A):
+def compute_determinant(A):
     """
-    Tính và in ra định thức của ma trận A (nếu A là vuông).
-    """
-    if A is None:
-        print("Bạn chưa tạo ma trận. Hãy chọn chức năng [1] trước.")
-        return
-    # Vì A là vuông, ta tính được định thức:
-    detA = np.linalg.det(A)
-    print(f"Định thức của ma trận = {detA}")
-
-
-def tinh_rank(A):
-    """
-    Tính và in ra hạng (rank) của ma trận A.
+    Tính định thức của ma trận nếu nó là ma trận vuông.
     """
     if A is None:
         print("Bạn chưa tạo ma trận. Hãy chọn chức năng [1] trước.")
         return
-    rankA = np.linalg.matrix_rank(A)
-    print(f"Hạng (rank) của ma trận = {rankA}")
+    m, n = A.shape
+    if m != n:
+        print("Không thể tính định thức cho ma trận không vuông (m ≠ n).")
+        return
+    det = np.linalg.det(A)
+    print("Định thức của ma trận A =", det)
 
 
-def tinh_SVD(A):
+def compute_rank(A):
     """
-    Tính và in kết quả phân rã SVD của ma trận A:
-      A = U * S * V^T
-    Sau đó tái tạo lại ma trận để so sánh.
+    Tính và in ra hạng (rank) của ma trận.
+    """
+    if A is None:
+        print("Bạn chưa tạo ma trận. Hãy chọn chức năng [1] trước.")
+        return
+    r = np.linalg.matrix_rank(A)
+    print("Hạng (rank) của ma trận A =", r)
+
+
+def compute_SVD(A):
+    """
+    Tính phân rã SVD của ma trận A: A = U * S * V^T, sau đó tái tạo lại ma trận.
     """
     if A is None:
         print("Bạn chưa tạo ma trận. Hãy chọn chức năng [1] trước.")
         return
 
-    U, S, Vt = np.linalg.svd(A, full_matrices=True)
+    # Sử dụng economy SVD để dễ dàng tái tạo lại A
+    U, S, Vt = np.linalg.svd(A, full_matrices=False)
 
     print("Ma trận U:")
     print(U)
@@ -98,50 +97,45 @@ def tinh_SVD(A):
     print("Ma trận V^T:")
     print(Vt)
 
-    # Tái tạo ma trận A từ U, S, V^T
-    N = A.shape[0]  # vì A là NxN
-    S_new = np.zeros((N, N))
-    for i in range(len(S)):
-        S_new[i, i] = S[i]
-    A_reconstructed = U @ S_new @ Vt
-
-    print("Ma trận tái tạo (U * S * V^T):")
+    # Tái tạo ma trận A từ U, S và V^T
+    A_reconstructed = U @ np.diag(S) @ Vt
+    print("Ma trận tái tạo từ SVD:")
     print(A_reconstructed)
 
-    # Tính sai khác
+    # Tính sai khác giữa ma trận ban đầu và ma trận tái tạo
     diff = np.abs(A - A_reconstructed)
-    print("Sai khác giữa A và A_reconstructed (giá trị tuyệt đối):")
+    print("Sai khác giữa A và A_reconstructed:")
     print(diff)
     print("Tổng sai khác =", np.sum(diff))
 
 
 def main():
-    A = None  # ban đầu chưa có ma trận
+    A = None  # Khởi tạo biến ma trận ban đầu
     while True:
         print("\n===== MENU =====")
-        print("1. Tạo ma trận ngẫu nhiên NxN")
-        print("2. Tìm dòng có giá trị trung bình lớn nhất và hoán đổi với dòng đầu")
+        print("1. Tạo ma trận ngẫu nhiên m x n")
+        print("2. Hoán đổi dòng có giá trị trung bình lớn nhất với dòng đầu")
         print("3. Thay đổi giá trị của một cột theo điều kiện")
-        print("4. Tính định thức của ma trận")
+        print("4. Tính định thức (nếu là ma trận vuông)")
         print("5. Tính hạng (rank) của ma trận")
-        print("6. Tính SVD của ma trận")
+        print("6. Tính SVD của ma trận và tái tạo lại ma trận")
         print("7. Thoát")
         print("================")
 
         choice = input("Chọn chức năng (1-7): ").strip()
 
         if choice == "1":
-            A = tao_ma_tran()
+            A = create_matrix()
         elif choice == "2":
-            A = hoan_doi_dong_max_mean(A)
+            A = swap_row_with_max_mean(A)
         elif choice == "3":
-            A = thay_doi_gia_tri_cot(A)
+            A = change_column_values(A)
         elif choice == "4":
-            tinh_dinh_thuc(A)
+            compute_determinant(A)
         elif choice == "5":
-            tinh_rank(A)
+            compute_rank(A)
         elif choice == "6":
-            tinh_SVD(A)
+            compute_SVD(A)
         elif choice == "7":
             print("Kết thúc chương trình.")
             break
